@@ -12,6 +12,7 @@ import java.io.File;
 import java.util.List;
 import app.workers.dao.FileDaoItf;
 import app.workers.dao.JpaDaoItf;
+import java.util.ArrayList;
 
 /**
  * Couche "métier" gérant les accès de et vers la base de données.
@@ -20,7 +21,7 @@ import app.workers.dao.JpaDaoItf;
  */
 public class DbWorker implements DbWorkerItf {
 
-    private static final String JPA_PU = "PU_MYSQL";
+    private static final String JPA_PU = "Ex09_-_JPA_DAOPU";
     private final JpaDaoItf<Personne, Integer> persWrk;
     private final JpaDaoItf<Localite, Integer> locWrk;
     private final JpaDaoItf<Departement, Integer> depWrk;
@@ -45,14 +46,110 @@ public class DbWorker implements DbWorkerItf {
      */
     @Override
     public void fermerBD() {
-
+        persWrk.deconnecter();
+        depWrk.deconnecter();
+        locWrk.deconnecter();
     }
 
     @Override
     public boolean estConnecte() {
+        boolean result = false;
+        if (persWrk.estConnectee() && depWrk.estConnectee() && locWrk.estConnectee()) {
+            result = true;
+        }
+        return result;
     }
 
+    @Override
+    public long compterPersonnes() throws MyDBException {
+        return persWrk.compter();
+    }
 
- 
+    @Override
+    public long compterLocalites() throws MyDBException {
+        return locWrk.compter();
+    }
+
+    @Override
+    public int lireEtSauverLocalites(File fichier, String nomCharset) throws Exception {
+        List<Localite> liste = ficLocWrk.lireFichierTexte(fichier, nomCharset);
+        int res = 0;
+        if (liste != null && !liste.isEmpty()) {
+            res = locWrk.sauverListe(liste);
+        }
+        return res;
+    }
+
+    @Override
+    public long compterDepartements() throws MyDBException {
+        return depWrk.compter();
+    }
+
+    @Override
+    public int lireEtSauverDepartements(File fichier, String nomCharset) throws Exception {
+        List<Departement> liste = ficDepWrk.lireFichierTexte(fichier, nomCharset);
+        int res = 0;
+        if (liste != null && !liste.isEmpty()) {
+            res = depWrk.sauverListe(liste);
+        }
+        return res;
+    }
+
+    @Override
+    public void ajouterPersonne(Personne p) throws MyDBException {
+        if (p != null) {
+            persWrk.creer(p);
+        }
+    }
+
+    @Override
+    public Personne lirePersonne(Personne p) throws MyDBException {
+        Personne result = new Personne();
+        if (p != null) {
+            result = persWrk.lire(p.getPkPers());
+        }
+        return result;
+    }
+
+    @Override
+    public void modifierPersonne(Personne p) throws MyDBException {
+        if (p != null) {
+            persWrk.modifier(p);
+        }
+    }
+
+    @Override
+    public void effacerPersonne(Personne p) throws MyDBException {
+        if (p != null) {
+            persWrk.effacer(p.getPkPers());
+        }
+    }
+
+    @Override
+    public List<Personne> lirePersonnes() throws MyDBException {
+        List<Personne> al = new ArrayList<Personne>();
+        if (persWrk.lireListe() != null) {
+            al = persWrk.lireListe();
+        }
+        return al;
+    }
+
+    @Override
+    public Personne rechercherPersonneAvecNom(String nomARechercher) throws MyDBException {
+
+        return persWrk.rechercher("nom", nomARechercher);
+
+    }
+
+    @Override
+    public List<Localite> lireLocalites() throws MyDBException {
+
+        return locWrk.lireListe();
+    }
+
+    @Override
+    public List<Departement> lireDepartements() throws MyDBException {
+        return depWrk.lireListe();
+    }
 
 }

@@ -29,9 +29,14 @@ public class PersonneManager {
 
     public Personne personneCourante() {
         Personne p = null;
+        if(index > liste.size()-1){
+            
+            index--;
+        }
         if (!liste.isEmpty()) {
             p = liste.get(index);
         }
+       
         return p;
     }
 

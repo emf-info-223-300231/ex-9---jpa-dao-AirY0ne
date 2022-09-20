@@ -47,6 +47,18 @@ public class JpaDao<E, PK> implements JpaDaoItf<E, PK> {
      */
     @Override
     public void creer(E e) throws MyDBException {
+
+        try {
+            if (e != null) {
+                et.begin();
+                em.persist(e);
+                et.commit();
+            }
+        } catch (Exception ex) {
+            et.rollback();
+            throw new MyDBException(SystemLib.getFullMethodName(), ex.getMessage());
+        }
+
     }
 
     /**
@@ -156,7 +168,16 @@ public class JpaDao<E, PK> implements JpaDaoItf<E, PK> {
     @Override
     @SuppressWarnings("unchecked")
     public E rechercher(String prop, Object valeur) throws MyDBException {
-        return null;
+        E eResult;
+       try{
+        Query query = em.createQuery("SELECT e FROM " +cl.getSimpleName()+ " e WHERE e."+prop+"=:valeur");
+        query.setParameter("valeur", valeur);
+        eResult = (E)query.getSingleResult();
+       }
+       catch(Exception ex){
+            throw new MyDBException(SystemLib.getFullMethodName(), ex.getMessage());
+       }
+        return eResult;
     }
 
     /**
@@ -188,7 +209,21 @@ public class JpaDao<E, PK> implements JpaDaoItf<E, PK> {
      */
     @Override
     public int effacerListe() throws MyDBException {
-        int nb;
+        int nb = 0;
+        List<E> liste = lireListe();
+        try {
+            et.begin();
+            for (E e : liste) {
+                em.remove(e);
+                nb++;
+
+            }
+            et.commit();
+        } catch (Exception ex) {
+            et.rollback();
+            throw new MyDBException(ex.getMessage(), ex.getMessage());
+        }
+
         return nb;
     }
 
@@ -202,6 +237,19 @@ public class JpaDao<E, PK> implements JpaDaoItf<E, PK> {
     @Override
     public int sauverListe(List<E> list) throws MyDBException {
         int nb = 0;
+        if (list != null) {
+            try{
+                for (E e : list) {
+                et.begin();
+                em.merge(e);
+                et.commit(); 
+                nb++;
+            }
+            }
+           catch(Exception ex){
+                   throw new MyDBException(SystemLib.getFullMethodName(), ex.getMessage());
+                   }
+        }
         return nb;
     }
 
