@@ -170,7 +170,7 @@ public class JpaDao<E, PK> implements JpaDaoItf<E, PK> {
     public E rechercher(String prop, Object valeur) throws MyDBException {
         E eResult;
        try{
-        Query query = em.createQuery("SELECT e FROM " +cl.getSimpleName()+ " e WHERE e.nom=:valeur");
+        Query query = em.createQuery("SELECT e FROM " +cl.getSimpleName()+ " e WHERE e."+prop+"=:valeur");
         query.setParameter("valeur", valeur);
         eResult = (E)query.getSingleResult();
        }
